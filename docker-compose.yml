@@ -1,23 +1,21 @@
-# version is now using "compose spec"
-# v2 and v3 are now combined!
-# docker-compose v1.27+ required
-
+# Compose spec — requires docker compose v1.27+
 services:
+
   vote:
-    build: 
+    build:
       context: ./vote
       target: dev
     depends_on:
       redis:
         condition: service_healthy
-    healthcheck: 
+    healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 10s
     volumes:
-     - ./vote:/usr/local/app
+      - ./vote:/usr/local/app
     ports:
       - "8080:80"
     networks:
@@ -26,11 +24,10 @@ services:
 
   result:
     build: ./result
-    # use nodemon rather than node for local dev
     entrypoint: nodemon --inspect=0.0.0.0 server.js
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
     volumes:
       - ./result:/usr/local/app
     ports:
@@ -45,50 +42,51 @@ services:
       context: ./worker
     depends_on:
       redis:
-        condition: service_healthy 
+        condition: service_healthy
       db:
-        condition: service_healthy 
+        condition: service_healthy
     networks:
       - back-tier
 
   redis:
     image: redis:alpine
+    ports:
+      - "6379:6379"
     volumes:
-      - "./healthchecks:/healthchecks"
+      - ./healthchecks:/healthchecks
     healthcheck:
       test: /healthchecks/redis.sh
-      interval: "5s"
+      interval: 5s
     networks:
       - back-tier
 
   db:
     image: postgres:15-alpine
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
     volumes:
-      - "db-data:/var/lib/postgresql/data"
-      - "./healthchecks:/healthchecks"
+      - db-data:/var/lib/postgresql/data
+      - ./healthchecks:/healthchecks
     healthcheck:
       test: /healthchecks/postgres.sh
-      interval: "5s"
-    networks:
+      interval: 5s
+    networks:                  # ← was missing!
       - back-tier
 
-  # this service runs once to seed the database with votes
-  # it won't run unless you specify the "seed" profile
-  # docker compose --profile seed up -d
   seed:
     build: ./seed-data
     profiles: ["seed"]
     depends_on:
       vote:
-        condition: service_healthy 
+        condition: service_healthy
     networks:
       - front-tier
     restart: "no"
 
-volumes:
+volumes:                       # ← was missing!
   db-data:
 
 networks:

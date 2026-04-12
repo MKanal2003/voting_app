@@ -1,50 +1,23 @@
-var app = angular.module('catsvsdogs', []);
 var socket = io.connect();
 
-var bg1 = document.getElementById('background-stats-1');
-var bg2 = document.getElementById('background-stats-2');
+var aPercent = document.getElementById('a-percent');
+var bPercent = document.getElementById('b-percent');
+var barA = document.getElementById('bar-a');
+var barB = document.getElementById('bar-b');
+var totalEl = document.getElementById('total');
 
-app.controller('statsCtrl', function($scope){
-  $scope.aPercent = 50;
-  $scope.bPercent = 50;
+socket.on('scores', function(json) {
+  var data = JSON.parse(json);
+  var a = parseInt(data.a || 0);
+  var b = parseInt(data.b || 0);
+  var total = a + b;
 
-  var updateScores = function(){
-    socket.on('scores', function (json) {
-       data = JSON.parse(json);
-       var a = parseInt(data.a || 0);
-       var b = parseInt(data.b || 0);
+  var pA = total > 0 ? Math.round(a / total * 100) : 50;
+  var pB = total > 0 ? (100 - pA) : 50;
 
-       var percentages = getPercentages(a, b);
-
-       bg1.style.width = percentages.a + "%";
-       bg2.style.width = percentages.b + "%";
-
-       $scope.$apply(function () {
-         $scope.aPercent = percentages.a;
-         $scope.bPercent = percentages.b;
-         $scope.total = a + b;
-       });
-    });
-  };
-
-  var init = function(){
-    document.body.style.opacity=1;
-    updateScores();
-  };
-  socket.on('message',function(data){
-    init();
-  });
+  aPercent.textContent = pA + '%';
+  bPercent.textContent = pB + '%';
+  barA.style.width = pA + '%';
+  barB.style.width = pB + '%';
+  totalEl.textContent = total;
 });
-
-function getPercentages(a, b) {
-  var result = {};
-
-  if (a + b > 0) {
-    result.a = Math.round(a / (a + b) * 100);
-    result.b = 100 - result.a;
-  } else {
-    result.a = result.b = 50;
-  }
-
-  return result;
-}

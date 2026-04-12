@@ -1,112 +1,128 @@
-@import url(//fonts.googleapis.com/css?family=Open+Sans:400,700,600);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
-*{
-  box-sizing:border-box;
-}
-html,body{
-  margin:0;
-  padding:0;
-  height:100%;
-  font-family: 'Open Sans';
-}
-body{
-  opacity:0;
-  transition: all 1s linear;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-.divider{
-  height: 150px;
-  width:2px;
-  background-color: #C0C9CE;
-  position: relative;
-  top: 50%;
-  float: left;
-  transform: translateY(-50%);
+body {
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
 }
 
-#background-stats-1{
-  background-color: #2196f3;
+h1 {
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  text-align: center;
 }
 
-#background-stats-2{
-  background-color: #00cbca;
+.subtitle {
+  font-size: 15px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 48px;
+  text-align: center;
 }
 
-#content-container{
-  z-index:2;
-  position:relative;
-  margin:0 auto;
-  display:table;
-  padding:10px;
-  max-width:940px;
-  height:100%;
+.results-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 520px;
 }
-#content-container-center{
-  display:table-cell;
-  text-align:center;
-  vertical-align:middle;
+
+.candidate {
+  margin-bottom: 28px;
 }
-#result{
-  z-index: 3;
-  position: absolute;
-  bottom: 40px;
-  right: 20px;
-  color: #fff;
-  opacity: 0.5;
-  font-size: 45px;
+
+.candidate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.candidate-name {
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.candidate-emoji { font-size: 28px; }
+
+.candidate-percent {
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.bar-track {
+  height: 14px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.bar-a { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.bar-b { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 8px 0 28px;
+}
+
+.total {
+  text-align: center;
+  font-size: 16px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 16px;
+}
+
+.total span {
+  font-weight: 700;
+  color: white;
+  font-size: 20px;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #00f2fe;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.live-badge {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 99px;
+  padding: 6px 14px;
+  font-size: 13px;
   font-weight: 600;
-}
-#choice{
-  transition: all 300ms linear;
-  line-height:1.3em;
-  background:#fff;
-  box-shadow: 10px 0 0 #fff, -10px 0 0 #fff;
-  vertical-align:middle;
-  font-size:40px;
-  font-weight: 600;
-  width: 450px;
-  height: 200px;
-}
-#choice a{
-  text-decoration:none;
-}
-#choice a:hover, #choice a:focus{
-  outline:0;
-  text-decoration:underline;
-}
-
-#choice .choice{
-  width: 49%;
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-  text-align: left;
-  padding-left: 50px;
-}
-
-#choice .choice .label{
-  text-transform: uppercase;
-}
-
-#choice .choice.dogs{
-  color: #00cbca;
-  float: right;
-}
-
-#choice .choice.cats{
-  color: #2196f3;
-  float: left;
-}
-#background-stats{
-  z-index:1;
-  height:100%;
-  width:100%;
-  position:absolute;
-}
-#background-stats div{
-  transition: width 400ms ease-in-out;
-  display:inline-block;
-  margin-bottom:-4px;
-  width:50%;
-  height:100%;
+  display: flex;
+  align-items: center;
 }

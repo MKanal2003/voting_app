@@ -16,45 +16,55 @@ namespace Worker
         {
             try
             {
+                // Connect to Postgres and Redis on startup
                 var pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
                 var redisConn = OpenRedisConnection("redis");
                 var redis = redisConn.GetDatabase();
 
-                // Keep alive is not implemented in Npgsql yet. This workaround was recommended:
-                // https://github.com/npgsql/npgsql/issues/1214#issuecomment-235828359
+                // Keepalive trick for Postgres connection
                 var keepAliveCommand = pgsql.CreateCommand();
                 keepAliveCommand.CommandText = "SELECT 1";
 
+                // This defines the shape of JSON we expect from Redis
                 var definition = new { vote = "", voter_id = "" };
+
+                // ---- Main loop — runs forever ----
                 while (true)
                 {
-                    // Slow down to prevent CPU spike, only query each 100ms
+                    // Wait 100ms between each loop (prevents CPU spike)
                     Thread.Sleep(100);
 
-                    // Reconnect redis if down
+                    // Reconnect Redis if connection dropped
                     if (redisConn == null || !redisConn.IsConnected) {
                         Console.WriteLine("Reconnecting Redis");
                         redisConn = OpenRedisConnection("redis");
                         redis = redisConn.GetDatabase();
                     }
+
+                    // Pop one vote off the LEFT of the Redis list
                     string json = redis.ListLeftPopAsync("votes").Result;
+
                     if (json != null)
                     {
+                        // Parse the JSON: { "voter_id": "abc123", "vote": "a" }
                         var vote = JsonConvert.DeserializeAnonymousType(json, definition);
                         Console.WriteLine($"Processing vote for '{vote.vote}' by '{vote.voter_id}'");
-                        // Reconnect DB if down
+
+                        // Reconnect Postgres if connection dropped
                         if (!pgsql.State.Equals(System.Data.ConnectionState.Open))
                         {
                             Console.WriteLine("Reconnecting DB");
                             pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
                         }
                         else
-                        { // Normal +1 vote requested
+                        {
+                            // Save the vote to the database
                             UpdateVote(pgsql, vote.voter_id, vote.vote);
                         }
                     }
                     else
                     {
+                        // No votes in queue — send keepalive ping to Postgres
                         keepAliveCommand.ExecuteNonQuery();
                     }
                 }
@@ -66,6 +76,7 @@ namespace Worker
             }
         }
 
+        // ---- Connect to Postgres, retry until it's ready ----
         private static NpgsqlConnection OpenDbConnection(string connectionString)
         {
             NpgsqlConnection connection;
@@ -92,6 +103,7 @@ namespace Worker
 
             Console.Error.WriteLine("Connected to db");
 
+            // Create the votes table if it doesn't exist yet
             var command = connection.CreateCommand();
             command.CommandText = @"CREATE TABLE IF NOT EXISTS votes (
                                         id VARCHAR(255) NOT NULL UNIQUE,
@@ -102,9 +114,9 @@ namespace Worker
             return connection;
         }
 
+        // ---- Connect to Redis, retry until it's ready ----
         private static ConnectionMultiplexer OpenRedisConnection(string hostname)
         {
-            // Use IP address to workaround https://github.com/StackExchange/StackExchange.Redis/issues/410
             var ipAddress = GetIp(hostname);
             Console.WriteLine($"Found redis at {ipAddress}");
 
@@ -123,6 +135,7 @@ namespace Worker
             }
         }
 
+        // Resolve hostname to IP address
         private static string GetIp(string hostname)
             => Dns.GetHostEntryAsync(hostname)
                 .Result
@@ -130,11 +143,13 @@ namespace Worker
                 .First(a => a.AddressFamily == AddressFamily.InterNetwork)
                 .ToString();
 
+        // ---- Save or update a vote in Postgres ----
         private static void UpdateVote(NpgsqlConnection connection, string voterId, string vote)
         {
             var command = connection.CreateCommand();
             try
             {
+                // Try INSERT first
                 command.CommandText = "INSERT INTO votes (id, vote) VALUES (@id, @vote)";
                 command.Parameters.AddWithValue("@id", voterId);
                 command.Parameters.AddWithValue("@vote", vote);
@@ -142,6 +157,7 @@ namespace Worker
             }
             catch (DbException)
             {
+                // If voter already exists → UPDATE instead
                 command.CommandText = "UPDATE votes SET vote = @vote WHERE id = @id";
                 command.ExecuteNonQuery();
             }

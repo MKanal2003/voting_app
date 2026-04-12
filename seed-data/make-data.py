@@ -1,13 +1,10 @@
-# this creates urlencode-friendly files without EOL
-import urllib.parse
+import requests
+import random
 
-outfile = open('postb', 'w')
-params = ({ 'vote': 'b' })
-encoded = urllib.parse.urlencode(params)
-outfile.write(encoded)
-outfile.close()
-outfile = open('posta', 'w')
-params = ({ 'vote': 'a' })
-encoded = urllib.parse.urlencode(params)
-outfile.write(encoded)
-outfile.close()
+options = ['a', 'b']
+
+# Send 100 random votes to the vote app
+for i in range(100):
+    vote = random.choice(options)
+    requests.post('http://vote/', data={'vote': vote})
+    print(f"Voted {vote}")
