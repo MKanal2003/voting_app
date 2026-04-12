@@ -1,0 +1,7 @@
+Creating network vote_backend
+Creating network vote_frontend
+Creating service vote_redis
+Creating service vote_db
+Creating service vote_vote
+Creating service vote_result
+Creating service vote_worker
