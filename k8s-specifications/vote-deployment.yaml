@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vote
+  labels:
+    app: vote
+spec:
+  replicas: 2          # run 2 copies for load balancing!
+  selector:
+    matchLabels:
+      app: vote
+  template:
+    metadata:
+      labels:
+        app: vote
+    spec:
+      containers:
+        - name: vote
+          image: arjunak/vote:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: OPTION_A
+              value: "Cats"
+            - name: OPTION_B
+              value: "Dogs"

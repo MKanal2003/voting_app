@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: result
+spec:
+  type: NodePort        # exposes to your machine
+  selector:
+    app: result
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 31001   # access at localhost:31001
