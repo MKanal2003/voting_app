@@ -1,4 +1,5 @@
 # Compose spec — requires docker compose v1.27+
+
 services:
 
   vote:
@@ -125,7 +126,6 @@ services:
       - "9100:9100"
     networks:
       - back-tier
-
 
 volumes:
   db-data:
