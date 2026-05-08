@@ -2,7 +2,7 @@
 services:
 
   vote:
-    image: arjunak/vote:1.0
+    image: arjunak/vote:latest
     depends_on:
       redis:
         condition: service_healthy
@@ -21,7 +21,7 @@ services:
       - back-tier
 
   result:
-    image: arjunak/result:1.0
+    image: arjunak/result:latest
     entrypoint: nodemon --inspect=0.0.0.0 server.js
     depends_on:
       db:
@@ -36,7 +36,7 @@ services:
       - back-tier
 
   worker:
-    image: arjunak/worker:1.0
+    image: arjunak/worker:latest
     depends_on:
       redis:
         condition: service_healthy
@@ -88,4 +88,4 @@ volumes:
 
 networks:
   front-tier:
-  back-tier:
+  back-tier:  
